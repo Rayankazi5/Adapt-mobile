@@ -14,6 +14,7 @@ interface Props {
   disabled?: boolean;
   loading?: boolean;
   className?: string;
+  textClassName?: string;
   icon?: React.ReactNode;
 }
 
@@ -47,6 +48,7 @@ export function Button({
   disabled,
   loading,
   className,
+  textClassName,
   icon,
 }: PropsWithChildren<Props>) {
   const { colors } = useTheme();
@@ -69,7 +71,7 @@ export function Button({
       ) : (
         <>
           {icon && <View>{icon}</View>}
-          <Text className={cn('text-sm font-medium', VARIANT_TEXT[variant])}>{children}</Text>
+          <Text className={cn('text-sm font-medium', VARIANT_TEXT[variant], textClassName)}>{children}</Text>
         </>
       )}
     </Pressable>

@@ -7,16 +7,37 @@ React Native (Expo) port of the [Adapt](../Adapt) fitness tracker, for iOS and A
 This is a from-scratch mobile build, not a 1:1 port. It covers:
 
 - Onboarding (age/weight/height/goal/activity level → TDEE + macro targets)
-- Manual meal logging with food search (~266 curated dishes)
+- **Calories tab — full port of the web `CalorieTracking` page:** Today /
+  Absorption Analysis tabs, Fasting Tracker (adaptive plan engine), Hydration
+  Tracker (live weather via expo-location + open-meteo), Macro Tracker
+  pillars + settings, Micronutrients & Vitamins, per-meal Food Log cards, live
+  Fatigue card, and the Add Food sheet with **Manual / AI Track / Barcode**
 - Daily dashboard (calories/macros vs. targets, recovery/fatigue score)
 - Workout intensity logging
-- Profile view + reset
+- Editable profile + personalized target tiles
 
-**Not included yet** (deferred from the web app on purpose — see below):
+**Not included yet:**
 
-- Barcode scanning (web app uses a 400MB+ SQLite lookup DB)
-- TensorFlow.js food image classification
-- Fasting timer, gamification, the full ~9,500-entry IFCT/USDA food set
+- The web app's Workout Programs / Exercise Library / Analytics module
+- XP/streak gamification, smart Recommendations card, dietary preference
+- The full ~9,500-entry IFCT/USDA food set (see `src/data/foodNutritionData.ts`)
+
+### AI Track and Barcode on mobile
+
+- **AI Track** is `src/ml/foodClassifier.ts`, a port of the web's
+  `lib/foodClassifier.ts` (same ImageNet→food mapping, HSL/texture
+  heuristics, portion profiles, on-device fine-tuning via `teachModel`).
+  MobileNet is fetched from the same Google Storage URL at runtime, so the
+  fallback path works out of the box. The **custom model isn't bundled** —
+  `Adapt/public/models/` is gitignored and absent on this machine. Drop the
+  files into `assets/models/food-classifier/` and flip
+  `src/ml/modelAssets.ts` (one edit) to enable it; the AI tab shows a notice
+  until then. User-taught weights persist via tfjs-react-native's
+  `asyncStorageIO` (web: IndexedDB).
+- **Barcode** scans EAN/UPC with `expo-camera` and looks codes up in the
+  **Open Food Facts public API** (`src/services/openFoodFacts.ts`) — the same
+  upstream dataset the web app's 400MB `food_facts.sqlite` was built from,
+  which is too large to ship in an app. Needs internet for the lookup.
 
 ## Architecture
 
@@ -64,7 +85,7 @@ SQLite), this app is **fully local-first / offline**: there is no server.
 | Web page | Mobile tab | Notes |
 |---|---|---|
 | `pages/Dashboard.tsx` | Dashboard | Calories + Workouts stat cards, Today's Macros, Fatigue & Recovery. Hydration/Fasting cards, XP/streak, Recommendations omitted (features not in MVP). |
-| `pages/CalorieTracking.tsx` | Calories | One `FoodLogCard` per meal + `FatigueCard`. Fasting/Hydration/Vitamin/Absorption trackers and the AI/Barcode add-food tabs omitted. |
+| `pages/CalorieTracking.tsx` | Calories | Full port — every tracker, both tabs, and all three Add Food modes (`src/components/calories/`). recharts → `src/components/charts/SimpleCharts.tsx`; `sonner` → `src/components/Toast.tsx`. |
 | `pages/WorkoutTracking.tsx` | Workouts | Simple session log in the same card style. The web app's Programs / Exercise Library / Analytics module is **not** ported — it's a separate ~2k-line feature. |
 | `pages/Profile.tsx` | Profile | Editable Personal Information form + Personalized Targets tiles. Dietary/fasting preferences omitted. |
 
@@ -84,14 +105,15 @@ npm run android  # boot straight into an Android emulator
 Requires Xcode (iOS Simulator) and/or Android Studio (Android emulator) set
 up locally, or the Expo Go app on a physical device.
 
-## Adding back barcode scanning / ML classification
+## Dependency notes
 
-Both are native-module-heavy and were intentionally left out of the MVP:
-
-- **Barcode scanning**: add `expo-camera`, look up scanned codes against a
-  bundled or remote food database (the current 400MB `food_facts.sqlite` is
-  too large to ship in an app bundle — consider a trimmed subset or a small
-  hosted lookup API).
-- **Food image classification**: port `lib/foodClassifier.ts` using
-  `@tensorflow/tfjs-react-native` in place of `@tensorflow/tfjs-node`, and
-  bundle the MobileNet + custom model files as assets.
+- `.npmrc` sets `legacy-peer-deps=true`: `@tensorflow/tfjs-react-native@1.0.0`
+  declares stale peer ranges (async-storage ^1, expo-gl ^13) that conflict
+  with Expo SDK 57 even though the APIs it uses are unchanged.
+- `react-native-worklets` is a direct dependency on purpose — Reanimated 4
+  needs its babel plugin, and a peer-only install gets pruned.
+- `metro.config.js` resolves `react-native-fs` to an empty module:
+  tfjs-react-native `require()`s it on a non-Expo code path that never runs.
+- Camera / photo-library / location permissions work in Expo Go as-is. For a
+  dev/production build add the `expo-camera`, `expo-image-picker` and
+  `expo-location` config plugins with usage strings to `app.json`.
