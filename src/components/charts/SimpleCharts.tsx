@@ -1,8 +1,9 @@
-// Dependency-free stand-ins for the recharts BarChart/LineChart used by
-// Adapt/components/calories/AbsorptionTracker.tsx (grid, axes, legend).
+// Dependency-free stand-ins for the recharts BarChart / LineChart /
+// RadarChart used by the Absorption and Workout Analytics pages
+// (grid, axes, legend).
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
-import Svg, { Line, Polyline, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, Line, Polygon, Polyline, Rect, Text as SvgText } from 'react-native-svg';
 import { useTheme } from '../../theme/useTheme';
 
 export interface Series {
@@ -71,7 +72,7 @@ export function SimpleBarChart({ data, series, height = 300 }: { data: ChartDatu
               <React.Fragment key={d.label}>
                 {series.map((s, j) => {
                   const v = Number(d[s.key]) || 0;
-                  return <Rect key={s.key} x={x0 + j * barW} y={y(v)} width={barW - 2} height={PAD.top + plotH - y(v)} fill={s.color} rx={2} />;
+                  return <Rect key={s.key} x={x0 + j * barW} y={y(v)} width={Math.max(0, barW - 2)} height={PAD.top + plotH - y(v)} fill={s.color} rx={2} />;
                 })}
                 <SvgText x={x0 + (groupW * 0.7) / 2} y={height - 10} fontSize={10} fill={colors.mutedForeground} textAnchor="middle">
                   {d.label}
@@ -100,7 +101,7 @@ export function SimpleLineChart({
   const { colors } = useTheme();
   const { width, onLayout } = useChartWidth();
   const values = data.flatMap((d) => series.map((s) => Number(d[s.key]) || 0));
-  const [min, max] = domain ?? [Math.min(...values), Math.max(...values)];
+  const [min, max] = domain ?? [Math.min(0, ...values), Math.max(...values)];
   const ticks = niceTicks(min, max);
   const plotW = Math.max(0, width - PAD.left - PAD.right);
   const plotH = height - PAD.top - PAD.bottom;
@@ -137,6 +138,82 @@ export function SimpleLineChart({
         </Svg>
       )}
       <Legend series={series} />
+    </View>
+  );
+}
+
+export function SimpleRadarChart({
+  data,
+  labelKey,
+  valueKey,
+  name,
+  color,
+  max = 100,
+  height = 320,
+}: {
+  data: Record<string, string | number>[];
+  labelKey: string;
+  valueKey: string;
+  name: string;
+  color: string;
+  max?: number;
+  height?: number;
+}) {
+  const { colors } = useTheme();
+  const { width, onLayout } = useChartWidth();
+  const cx = width / 2;
+  const cy = height / 2;
+  const r = Math.max(0, Math.min(width, height) / 2 - 36);
+  const n = data.length;
+  const angle = (i: number) => -Math.PI / 2 + (i / n) * Math.PI * 2;
+  const pt = (i: number, ratio: number) => ({ x: cx + Math.cos(angle(i)) * r * ratio, y: cy + Math.sin(angle(i)) * r * ratio });
+  const rings = [0.25, 0.5, 0.75, 1];
+
+  return (
+    <View onLayout={onLayout}>
+      {width > 0 && n > 0 && (
+        <Svg width={width} height={height}>
+          {rings.map((ratio) => (
+            <Polygon
+              key={ratio}
+              points={data.map((_, i) => `${pt(i, ratio).x},${pt(i, ratio).y}`).join(' ')}
+              fill="none"
+              stroke={colors.border}
+            />
+          ))}
+          {data.map((_, i) => (
+            <Line key={i} x1={cx} y1={cy} x2={pt(i, 1).x} y2={pt(i, 1).y} stroke={colors.border} />
+          ))}
+          {rings.map((ratio) => (
+            <SvgText key={`t${ratio}`} x={cx + 4} y={cy - r * ratio - 2} fontSize={9} fill={colors.mutedForeground}>
+              {Math.round(max * ratio)}
+            </SvgText>
+          ))}
+          <Polygon
+            points={data.map((d, i) => {
+              const p = pt(i, Math.min(1, (Number(d[valueKey]) || 0) / max));
+              return `${p.x},${p.y}`;
+            }).join(' ')}
+            fill={color}
+            fillOpacity={0.6}
+            stroke={color}
+            strokeWidth={2}
+          />
+          {data.map((d, i) => {
+            const p = pt(i, Math.min(1, (Number(d[valueKey]) || 0) / max));
+            return <Circle key={`c${i}`} cx={p.x} cy={p.y} r={3} fill={color} />;
+          })}
+          {data.map((d, i) => {
+            const p = pt(i, 1.18);
+            return (
+              <SvgText key={`l${i}`} x={p.x} y={p.y + 4} fontSize={11} fill={colors.mutedForeground} textAnchor="middle">
+                {String(d[labelKey])}
+              </SvgText>
+            );
+          })}
+        </Svg>
+      )}
+      <Legend series={[{ key: valueKey, name, color }]} />
     </View>
   );
 }

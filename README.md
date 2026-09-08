@@ -13,13 +13,20 @@ This is a from-scratch mobile build, not a 1:1 port. It covers:
   pillars + settings, Micronutrients & Vitamins, per-meal Food Log cards, live
   Fatigue card, and the Add Food sheet with **Manual / AI Track / Barcode**
 - Daily dashboard (calories/macros vs. targets, recovery/fatigue score)
-- Workout intensity logging
+- **Workouts tab — full port of the web `WorkoutTracking` page:** Programs
+  (suggested-workout generator, PPL / Full Body / Bro Split / Custom),
+  Exercise Library (search, filters, custom exercises), Analytics (device
+  sync + Bluetooth simulation, muscle-group status, radar / bar / line
+  charts, recovery guidance), and the Active Workout session with timer,
+  per-exercise weight, XP popups and completion summary
 - Editable profile + personalized target tiles
 
 **Not included yet:**
 
-- The web app's Workout Programs / Exercise Library / Analytics module
-- XP/streak gamification, smart Recommendations card, dietary preference
+- The XP / level / streak *display* (nav bar pill, Dashboard banner). The
+  underlying `gamification` service is ported and Active Workout awards
+  XP/streak into the same storage keys as the web, so the UI can be added on top.
+- Smart Recommendations card, dietary preference
 - The full ~9,500-entry IFCT/USDA food set (see `src/data/foodNutritionData.ts`)
 
 ### AI Track and Barcode on mobile
@@ -86,7 +93,7 @@ SQLite), this app is **fully local-first / offline**: there is no server.
 |---|---|---|
 | `pages/Dashboard.tsx` | Dashboard | Calories + Workouts stat cards, Today's Macros, Fatigue & Recovery. Hydration/Fasting cards, XP/streak, Recommendations omitted (features not in MVP). |
 | `pages/CalorieTracking.tsx` | Calories | Full port — every tracker, both tabs, and all three Add Food modes (`src/components/calories/`). recharts → `src/components/charts/SimpleCharts.tsx`; `sonner` → `src/components/Toast.tsx`. |
-| `pages/WorkoutTracking.tsx` | Workouts | Simple session log in the same card style. The web app's Programs / Exercise Library / Analytics module is **not** ported — it's a separate ~2k-line feature. |
+| `pages/WorkoutTracking.tsx` | Workouts | Full port (`src/components/workout/`). Program/exercise data copied verbatim; recharts radar → `SimpleRadarChart`; `lib/gamification.ts` → `src/services/gamification.ts`. Finished sessions land in the same workout log the Dashboard/Hydration read. |
 | `pages/Profile.tsx` | Profile | Editable Personal Information form + Personalized Targets tiles. Dietary/fasting preferences omitted. |
 
 Gradient stat-card backgrounds and the CSS keyframe animations from

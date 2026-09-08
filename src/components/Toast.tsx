@@ -5,7 +5,7 @@ import { Animated, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '../lib/cn';
 
-type ToastKind = 'success' | 'error' | 'loading';
+type ToastKind = 'success' | 'error' | 'loading' | 'default';
 interface ToastItem {
   id: number;
   kind: ToastKind;
@@ -41,6 +41,7 @@ function push(kind: ToastKind, message: string, opts?: ToastOptions): number {
 }
 
 export const toast = {
+  message: (message: string, opts?: ToastOptions) => push('default', message, opts),
   success: (message: string, opts?: ToastOptions) => push('success', message, opts),
   error: (message: string, opts?: ToastOptions) => push('error', message, opts),
   loading: (message: string, opts?: ToastOptions) => push('loading', message, opts),
@@ -61,9 +62,10 @@ const KIND_CLASS: Record<ToastKind, string> = {
   success: 'border-green-500/40',
   error: 'border-red-500/40',
   loading: 'border-border',
+  default: 'border-border',
 };
 
-const KIND_PREFIX: Record<ToastKind, string> = { success: '✓', error: '✕', loading: '…' };
+const KIND_PREFIX: Record<ToastKind, string> = { success: '✓', error: '✕', loading: '…', default: '' };
 
 export function Toaster() {
   const [list, setList] = useState<ToastItem[]>([]);
@@ -99,7 +101,7 @@ function ToastBubble({ item }: { item: ToastItem }) {
       className={cn('w-full max-w-[420px] rounded-xl border bg-card px-4 py-3 shadow-md', KIND_CLASS[item.kind])}
     >
       <Text className="text-sm font-medium text-foreground">
-        {KIND_PREFIX[item.kind]} {item.message}
+        {KIND_PREFIX[item.kind] ? `${KIND_PREFIX[item.kind]} ` : ''}{item.message}
       </Text>
       {item.description ? <Text className="mt-0.5 text-xs text-muted-foreground">{item.description}</Text> : null}
     </Animated.View>
