@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens copied from the web app's globals.css (Adapt/globals.css)
+   so both apps share the same palette. */
+/* Hex, not the web app's oklch() — matches src/theme/tokens.ts (see the
+   note below on why runtime values there must be hex, not oklch()). These
+   :root defaults are the pre-ThemeProvider fallback / light palette. */
+:root {
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #030213;
+  --primary-foreground: #ffffff;
+  --secondary: #eceef2;
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: #0000001a;
+  --input-background: #f3f3f5;
+  --ring: #a1a1a1;
+  --radius: 0.625rem;
+}
+
+/* Dark-mode values aren't declared here as a `.dark` class or a
+   prefers-color-scheme media query (both proved unreliable for reactively
+   swapping NativeWind's *custom-property*-driven colors on native — the
+   compiled output didn't re-resolve when the OS scheme changed at runtime,
+   even though RN's own Appearance API did fire correctly). Instead
+   ThemeProvider (src/theme/ThemeProvider.tsx) overrides these same
+   `--variables` at runtime via NativeWind's `vars()`, driven by React
+   Native's useColorScheme() — see that file for the dark palette. */

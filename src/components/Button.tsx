@@ -1,56 +1,77 @@
+// Mirrors Adapt/components/ui/button.tsx (shadcn Button) variant/size scale.
 import React, { PropsWithChildren } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
-import { radius, spacing } from '../theme/colors';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { cn } from '../lib/cn';
 import { useTheme } from '../theme/useTheme';
+
+type Variant = 'primary' | 'destructive' | 'outline' | 'secondary' | 'ghost';
+type Size = 'default' | 'sm' | 'lg';
 
 interface Props {
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'destructive';
+  variant?: Variant;
+  size?: Size;
   disabled?: boolean;
   loading?: boolean;
+  className?: string;
+  icon?: React.ReactNode;
 }
+
+const VARIANT_BG: Record<Variant, string> = {
+  primary: 'bg-primary',
+  destructive: 'bg-destructive',
+  outline: 'border border-border bg-background',
+  secondary: 'bg-secondary',
+  ghost: 'bg-transparent',
+};
+
+const VARIANT_TEXT: Record<Variant, string> = {
+  primary: 'text-primary-foreground',
+  destructive: 'text-white',
+  outline: 'text-foreground',
+  secondary: 'text-secondary-foreground',
+  ghost: 'text-foreground',
+};
+
+const SIZE_CLASS: Record<Size, string> = {
+  default: 'h-9 px-4',
+  sm: 'h-8 px-3',
+  lg: 'h-10 px-6',
+};
 
 export function Button({
   children,
   onPress,
   variant = 'primary',
+  size = 'default',
   disabled,
   loading,
+  className,
+  icon,
 }: PropsWithChildren<Props>) {
   const { colors } = useTheme();
-
-  const bg =
-    variant === 'primary' ? colors.primary : variant === 'destructive' ? colors.destructive : colors.muted;
-  const fg = variant === 'secondary' ? colors.foreground : colors.primaryForeground;
+  const indicatorColor = variant === 'primary' ? colors.primaryForeground : colors.foreground;
 
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled || loading}
-      style={({ pressed }) => [
-        styles.button,
-        { backgroundColor: bg, opacity: disabled ? 0.5 : pressed ? 0.85 : 1 },
-      ]}
+      className={cn(
+        'flex-row items-center justify-center gap-2 rounded-md active:opacity-85',
+        VARIANT_BG[variant],
+        SIZE_CLASS[size],
+        disabled && 'opacity-50',
+        className
+      )}
     >
       {loading ? (
-        <ActivityIndicator color={fg} />
+        <ActivityIndicator color={indicatorColor} />
       ) : (
-        <Text style={[styles.text, { color: fg }]}>{children}</Text>
+        <>
+          {icon && <View>{icon}</View>}
+          <Text className={cn('text-sm font-medium', VARIANT_TEXT[variant])}>{children}</Text>
+        </>
       )}
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    paddingVertical: spacing.sm + 4,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});

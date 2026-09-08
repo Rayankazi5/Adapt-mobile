@@ -1,10 +1,10 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from 'react-native';
 import { Button } from '../components/Button';
+import { cn } from '../lib/cn';
 import { RootStackParamList } from '../navigation/types';
 import { profileService } from '../services/profileService';
-import { spacing } from '../theme/colors';
 import { useTheme } from '../theme/useTheme';
 import { ActivityLevel, Goal, UserProfile } from '../types';
 
@@ -25,7 +25,6 @@ const ACTIVITY_LEVELS: { key: ActivityLevel; label: string }[] = [
 ];
 
 export function OnboardingScreen({ navigation }: Props) {
-  const { colors } = useTheme();
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [weight, setWeight] = useState('');
@@ -58,13 +57,10 @@ export function OnboardingScreen({ navigation }: Props) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.title, { color: colors.foreground }]}>Welcome to Adapt</Text>
-        <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
+    <KeyboardAvoidingView className="flex-1 bg-background" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView contentContainerClassName="px-6 pb-8 pt-16">
+        <Text className="mb-1 text-[28px] font-bold text-foreground">Welcome to Adapt</Text>
+        <Text className="mb-6 text-[15px] text-muted-foreground">
           Tell us about yourself so we can set your calorie and macro targets.
         </Text>
 
@@ -73,15 +69,15 @@ export function OnboardingScreen({ navigation }: Props) {
         <Field label="Weight (kg)" value={weight} onChangeText={setWeight} placeholder="70" keyboardType="decimal-pad" />
         <Field label="Height (cm)" value={height} onChangeText={setHeight} placeholder="175" keyboardType="decimal-pad" />
 
-        <Text style={[styles.label, { color: colors.foreground }]}>Goal</Text>
-        <View style={styles.row}>
+        <Text className="mb-1 text-sm font-semibold text-foreground">Goal</Text>
+        <View className="mb-4 flex-row gap-2">
           {GOALS.map((g) => (
             <Chip key={g.key} label={g.label} selected={goal === g.key} onPress={() => setGoal(g.key)} />
           ))}
         </View>
 
-        <Text style={[styles.label, { color: colors.foreground }]}>Activity Level</Text>
-        <View style={styles.rowWrap}>
+        <Text className="mb-1 text-sm font-semibold text-foreground">Activity Level</Text>
+        <View className="mb-4 flex-row flex-wrap gap-2">
           {ACTIVITY_LEVELS.map((a) => (
             <Chip
               key={a.key}
@@ -92,9 +88,9 @@ export function OnboardingScreen({ navigation }: Props) {
           ))}
         </View>
 
-        {error && <Text style={{ color: colors.destructive, marginBottom: spacing.sm }}>{error}</Text>}
+        {error && <Text className="mb-2 text-destructive">{error}</Text>}
 
-        <View style={{ marginTop: spacing.lg }}>
+        <View className="mt-6">
           <Button onPress={handleSubmit} loading={saving}>
             Get Started
           </Button>
@@ -113,10 +109,10 @@ function Field(props: {
 }) {
   const { colors } = useTheme();
   return (
-    <View style={{ marginBottom: spacing.md }}>
-      <Text style={[styles.label, { color: colors.foreground }]}>{props.label}</Text>
+    <View className="mb-4">
+      <Text className="mb-1 text-sm font-semibold text-foreground">{props.label}</Text>
       <TextInput
-        style={[styles.input, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]}
+        className="rounded-[10px] border border-border bg-card px-4 py-2.5 text-base text-foreground"
         value={props.value}
         onChangeText={props.onChangeText}
         placeholder={props.placeholder}
@@ -128,43 +124,15 @@ function Field(props: {
 }
 
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
-  const { colors } = useTheme();
   return (
     <Text
       onPress={onPress}
-      style={[
-        styles.chip,
-        {
-          backgroundColor: selected ? colors.primary : colors.muted,
-          color: selected ? colors.primaryForeground : colors.foreground,
-        },
-      ]}
+      className={cn(
+        'overflow-hidden rounded-full px-4 py-2 text-[13px] font-semibold',
+        selected ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
+      )}
     >
       {label}
     </Text>
   );
 }
-
-const styles = StyleSheet.create({
-  content: { padding: spacing.lg, paddingTop: spacing.xl * 1.5, paddingBottom: spacing.xl },
-  title: { fontSize: 28, fontWeight: '700', marginBottom: spacing.xs },
-  subtitle: { fontSize: 15, marginBottom: spacing.lg },
-  label: { fontSize: 14, fontWeight: '600', marginBottom: spacing.xs },
-  input: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 10,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
-    fontSize: 16,
-  },
-  row: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
-  rowWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
-  chip: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: 20,
-    fontSize: 13,
-    fontWeight: '600',
-    overflow: 'hidden',
-  },
-});

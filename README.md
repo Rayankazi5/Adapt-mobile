@@ -37,10 +37,40 @@ SQLite), this app is **fully local-first / offline**: there is no server.
   note in that file for how to add it back via a bundled SQLite asset
   instead).
 - `src/navigation/` — React Navigation (native-stack + bottom-tabs) replaces
-  `react-router-dom`, which is web-only.
-- `src/components/` + `src/theme/` — a small set of RN primitives
-  (Card/Button/ProgressBar) and a light/dark color-token theme, since the
-  web app's Radix/Shadcn components can't run in React Native.
+  `react-router-dom`, which is web-only. Tab icons are the same lucide set
+  as `components/Navigation.tsx` (via `lucide-react-native`).
+- **Styling: NativeWind (Tailwind for RN)** — same utility-class syntax and
+  `cn()` helper as the web app. `global.css` + `tailwind.config.js` mirror
+  the web app's `globals.css` / `tailwind.config.js` design tokens
+  (`bg-background`, `text-muted-foreground`, `rounded-lg`, …) so styling
+  code reads the same in both repos.
+  - Tokens are hex equivalents of the web app's `oklch()` values (computed
+    by Lightning CSS from the same source) — NativeWind can't parse
+    `oklch()` in values applied at runtime.
+  - Dark mode: `src/theme/ThemeProvider.tsx` swaps the `--variables` via
+    NativeWind's `vars()` driven by the OS color scheme. A `.dark` class or
+    `prefers-color-scheme` media query in CSS did **not** re-resolve
+    custom-property colors reactively on native, so this is the reliable
+    path. `src/theme/colors.ts` holds the same hex values for the few RN
+    APIs that need a literal color (tab bar tint, ActivityIndicator).
+- `src/components/` — ports of the web app's UI: `Card` (+ Header/Title/
+  Content/Description, matching `components/ui/card.tsx`), `Button`
+  (shadcn variants/sizes), `FoodLogCard`, `FatigueCard` (SVG ring gauge),
+  `StatCard` (Dashboard tinted stat cards), `MacroBar`, `AddFoodModal`
+  (the "Manual" tab of `AddFoodDialog`).
+
+## Web ↔ mobile screen mapping
+
+| Web page | Mobile tab | Notes |
+|---|---|---|
+| `pages/Dashboard.tsx` | Dashboard | Calories + Workouts stat cards, Today's Macros, Fatigue & Recovery. Hydration/Fasting cards, XP/streak, Recommendations omitted (features not in MVP). |
+| `pages/CalorieTracking.tsx` | Calories | One `FoodLogCard` per meal + `FatigueCard`. Fasting/Hydration/Vitamin/Absorption trackers and the AI/Barcode add-food tabs omitted. |
+| `pages/WorkoutTracking.tsx` | Workouts | Simple session log in the same card style. The web app's Programs / Exercise Library / Analytics module is **not** ported — it's a separate ~2k-line feature. |
+| `pages/Profile.tsx` | Profile | Editable Personal Information form + Personalized Targets tiles. Dietary/fasting preferences omitted. |
+
+Gradient stat-card backgrounds and the CSS keyframe animations from
+`globals.css` are approximated with solid tints / a Reanimated ring fill —
+NativeWind's gradient utilities need extra native wiring.
 
 ## Running
 

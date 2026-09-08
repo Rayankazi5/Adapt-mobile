@@ -1,3 +1,7 @@
+// Resolved (sRGB) equivalents of the oklch() tokens in global.css / the web
+// app's globals.css. NativeWind resolves oklch() for classNames on its own;
+// these exist only for the handful of RN APIs that need a literal JS color
+// string instead of a className (ActivityIndicator, tab bar tint, StatusBar).
 export interface ThemeColors {
   background: string;
   card: string;
@@ -8,45 +12,28 @@ export interface ThemeColors {
   primary: string;
   primaryForeground: string;
   destructive: string;
-  success: string;
 }
 
 export const lightColors: ThemeColors = {
-  background: '#FAFAF9',
-  card: '#FFFFFF',
-  foreground: '#1C1917',
-  muted: '#F1F0EE',
-  mutedForeground: '#78716C',
-  border: '#E7E5E4',
-  primary: '#16A34A',
-  primaryForeground: '#FFFFFF',
-  destructive: '#DC2626',
-  success: '#16A34A',
+  background: '#ffffff',
+  card: '#ffffff',
+  foreground: '#0a0a0a',
+  muted: '#ececf0',
+  mutedForeground: '#717182',
+  border: '#0000001a',
+  primary: '#030213',
+  primaryForeground: '#ffffff',
+  destructive: '#d4183d',
 };
 
 export const darkColors: ThemeColors = {
-  background: '#0C0A09',
-  card: '#1C1917',
-  foreground: '#FAFAF9',
-  muted: '#292524',
-  mutedForeground: '#A8A29E',
-  border: '#292524',
-  primary: '#22C55E',
-  primaryForeground: '#0C0A09',
-  destructive: '#F87171',
-  success: '#22C55E',
-};
-
-export const spacing = {
-  xs: 4,
-  sm: 8,
-  md: 16,
-  lg: 24,
-  xl: 32,
-};
-
-export const radius = {
-  sm: 8,
-  md: 12,
-  lg: 16,
+  background: '#0a0a0a',
+  card: '#0a0a0a',
+  foreground: '#fafafa',
+  muted: '#262626',
+  mutedForeground: '#a1a1a1',
+  border: '#262626',
+  primary: '#fafafa',
+  primaryForeground: '#171717',
+  destructive: '#82181a',
 };

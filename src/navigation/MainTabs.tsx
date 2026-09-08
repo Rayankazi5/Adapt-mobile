@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import React from 'react';
-import { Text } from 'react-native';
+import { Apple, Dumbbell, Home, UserCircle } from 'lucide-react-native';
+import React, { ComponentType } from 'react';
 import { DashboardScreen } from '../screens/DashboardScreen';
 import { LogMealScreen } from '../screens/LogMealScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
@@ -10,11 +10,12 @@ import { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const ICONS: Record<keyof MainTabParamList, string> = {
-  Dashboard: '🏠',
-  LogMeal: '🍽️',
-  Workout: '🏋️',
-  Profile: '👤',
+// Same icon set as Adapt/components/Navigation.tsx (lucide-react -> lucide-react-native).
+const ICONS: Record<keyof MainTabParamList, ComponentType<{ size?: number; color?: string }>> = {
+  Dashboard: Home,
+  LogMeal: Apple,
+  Workout: Dumbbell,
+  Profile: UserCircle,
 };
 
 export function MainTabs() {
@@ -26,12 +27,15 @@ export function MainTabs() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.mutedForeground,
         tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border },
-        tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>{ICONS[route.name]}</Text>,
+        tabBarIcon: ({ color, size }) => {
+          const Icon = ICONS[route.name];
+          return <Icon size={size} color={color} />;
+        },
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="LogMeal" component={LogMealScreen} options={{ title: 'Log Meal' }} />
-      <Tab.Screen name="Workout" component={WorkoutScreen} />
+      <Tab.Screen name="LogMeal" component={LogMealScreen} options={{ title: 'Calories' }} />
+      <Tab.Screen name="Workout" component={WorkoutScreen} options={{ title: 'Workouts' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
